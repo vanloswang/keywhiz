@@ -35,8 +35,10 @@
 #
 FROM maven:3.3-jdk-8
 
-# mkdir for app
-RUN mkdir -p /usr/src/app
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install gettext && \
+    mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # caching trick to speed up build; see:
@@ -72,5 +74,6 @@ EXPOSE 4444
 
 VOLUME ["/data"]
 
-COPY docker.sh /usr/src/app
-ENTRYPOINT ["/usr/src/app/docker.sh"]
+COPY docker/entry.sh /usr/src/app
+COPY docker/wizard.sh /usr/src/app
+ENTRYPOINT ["/usr/src/app/entry.sh"]

@@ -13,6 +13,10 @@ if [ -z "$KEYWHIZ_CONFIG" ]; then
     echo -n "${RESET}"
 fi
 
+if [ "$1" == "wizard" ]; then
+    exec ./wizard.sh
+fi
+
 if [ "$MIGRATE_ON_STARTUP" == "true" ]; then
     java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar migrate $KEYWHIZ_CONFIG
 fi
