@@ -314,6 +314,11 @@
         <artifactId>mysql-connector-java</artifactId>
         <version>${mysql.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.mpierce.jersey2.metrics</groupId>
+        <artifactId>jersey2-metrics-core</artifactId>
+        <version>1.0.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

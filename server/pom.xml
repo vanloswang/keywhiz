@@ -141,6 +141,12 @@
       <artifactId>dropwizard-java8-auth</artifactId>
     </dependency>
 
+    <!-- Better metrics for Jersey -->
+    <dependency>
+      <groupId>org.mpierce.jersey2.metrics</groupId>
+      <artifactId>jersey2-metrics-core</artifactId>
+    </dependency>
+
     <!-- Necessary for object type detection. -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

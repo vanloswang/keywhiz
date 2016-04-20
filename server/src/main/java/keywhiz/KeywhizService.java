@@ -67,6 +67,7 @@ import keywhiz.service.resources.automation.v2.ClientResource;
 import keywhiz.service.resources.automation.v2.GroupResource;
 import keywhiz.service.resources.automation.v2.SecretResource;
 import org.flywaydb.core.Flyway;
+import org.mpierce.jersey2.metrics.MetricsAppEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,6 +163,10 @@ public class KeywhizService extends Application<KeywhizConfig> {
     }
 
     JerseyEnvironment jersey = environment.jersey();
+
+    logger.debug("Registering metrics listener");
+    MetricsAppEventListener listener = new MetricsAppEventListener.Builder(injector.getInstance(MetricRegistry.class)).build();
+    jersey.register(listener);
 
     logger.debug("Registering resource filters");
     jersey.register(injector.getInstance(ClientCertificateFilter.class));
