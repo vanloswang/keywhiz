@@ -59,7 +59,7 @@ public class SecretDAO {
   }
 
   @VisibleForTesting
-  public long createSecret(String name, String encryptedSecret, String version,
+  public long createSecret(String name, String encryptedSecret,
       String creator, Map<String, String> metadata, long expiry, String description, @Nullable String type,
       @Nullable Map<String, String> generationOptions) {
     // TODO(jlfwong): Should the description be updated...?
@@ -77,7 +77,7 @@ public class SecretDAO {
             generationOptions);
       }
 
-      secretContentDAO.createSecretContent(secretId, encryptedSecret, version, creator,
+      secretContentDAO.createSecretContent(secretId, encryptedSecret, creator,
           metadata, expiry);
       return secretId;
     });
@@ -109,13 +109,10 @@ public class SecretDAO {
 
   /**
    * @param secretId external secret series id to look up secrets by.
-   * @param version specific version of secret. May be empty.
    * @return Secret matching input parameters or Optional.absent().
    */
-  public Optional<SecretSeriesAndContent> getSecretByIdAndVersion(long secretId, String version) {
-    checkNotNull(version);
-
-    return dslContext.<Optional<SecretSeriesAndContent>>transactionResult(configuration -> {
+  public Optional<SecretSeriesAndContent> getSecretById(long secretId) {
+    return dslContext.transactionResult(configuration -> {
       SecretContentDAO secretContentDAO = secretContentDAOFactory.using(configuration);
       SecretSeriesDAO secretSeriesDAO = secretSeriesDAOFactory.using(configuration);
 
@@ -125,7 +122,7 @@ public class SecretDAO {
       }
 
       Optional<SecretContent> content =
-          secretContentDAO.getSecretContentBySecretIdAndVersion(secretId, version);
+          secretContentDAO.getSecretContentBySecretId(secretId);
       if (!content.isPresent()) {
         return Optional.empty();
       }
@@ -135,33 +132,11 @@ public class SecretDAO {
   }
 
   /**
-   * @param name external secret series name to look up versions by
-   * @return List of versions tied to the parameter secret name.
-   */
-  public ImmutableList<String> getVersionsForSecretName(String name) {
-    checkNotNull(name);
-
-    return dslContext.<ImmutableList<String>>transactionResult(configuration -> {
-      SecretContentDAO secretContentDAO = secretContentDAOFactory.using(configuration);
-      SecretSeriesDAO secretSeriesDAO = secretSeriesDAOFactory.using(configuration);
-
-      Optional<SecretSeries> series = secretSeriesDAO.getSecretSeriesByName(name);
-      if (!series.isPresent()) {
-        return ImmutableList.of();
-      }
-
-      return secretContentDAO.getVersionFromSecretId(series.get().id());
-    });
-  }
-
-  /**
    * @param name of secret series to look up secrets by.
-   * @param version specific version of secret. May be empty.
    * @return Secret matching input parameters or Optional.absent().
    */
-  public Optional<SecretSeriesAndContent> getSecretByNameAndVersion(String name, String version) {
+  public Optional<SecretSeriesAndContent> getSecretByName(String name) {
     checkArgument(!name.isEmpty());
-    checkNotNull(version);
 
     // In the past, the two data fetches below were wrapped in a transaction. The transaction was
     // removed because jOOQ transactions doesn't play well with MySQL readonly connections
@@ -183,7 +158,7 @@ public class SecretDAO {
     }
 
     Optional<SecretContent> secretContent =
-        secretContentDAO.getSecretContentBySecretIdAndVersion(secretSeries.get().id(), version);
+        secretContentDAO.getSecretContentBySecretId(secretSeries.get().id());
     if (!secretContent.isPresent()) {
       return Optional.empty();
     }
@@ -236,11 +211,9 @@ public class SecretDAO {
    * Deletes a specific version in a secret series.
    *
    * @param name of secret series to delete from.
-   * @param version of secret to specifically delete.
    */
-  public void deleteSecretByNameAndVersion(String name, String version) {
+  public void deleteSecretByName(String name) {
     checkArgument(!name.isEmpty());
-    checkNotNull(version);
 
     dslContext.transaction(configuration -> {
       SecretContentDAO secretContentDAO = secretContentDAOFactory.using(configuration);
@@ -252,7 +225,7 @@ public class SecretDAO {
       }
 
       long seriesId = secretSeries.get().id();
-      secretContentDAO.deleteSecretContentBySecretIdAndVersion(seriesId, version);
+      secretContentDAO.deleteSecretContentBySecretId(seriesId);
 
       if (secretContentDAO.getSecretContentsBySecretId(seriesId).isEmpty()) {
         secretSeriesDAO.deleteSecretSeriesById(seriesId);

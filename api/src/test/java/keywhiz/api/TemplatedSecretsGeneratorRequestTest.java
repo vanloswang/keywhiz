@@ -30,7 +30,6 @@ public class TemplatedSecretsGeneratorRequestTest {
             "{{#numeric}}10{{/numeric}}",
             "test-database.yaml",
             "desc",
-            true,
             ImmutableMap.of());
 
     assertThat(fromJson(jsonFixture("fixtures/templatedSecretsGeneratorRequest.json"),

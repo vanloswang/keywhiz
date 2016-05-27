@@ -20,10 +20,9 @@ import com.codahale.metrics.annotation.Timed;
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.auth.Auth;
-import java.text.ParseException;
+
 import java.util.Optional;
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static keywhiz.api.model.Secret.splitNameAndVersion;
 
 /**
  * @parentEndpointName secret
@@ -93,17 +91,8 @@ public class SecretDeliveryResource {
   @GET
   public SecretDeliveryResponse getSecret(@NotEmpty @PathParam("secretName") String secretName,
                                           @Auth Client client) {
-    String[] parts;
-    try {
-      parts = splitNameAndVersion(secretName);
-    } catch (ParseException e) {
-      throw new BadRequestException(format("Invalid secret name '%s'", secretName));
-    }
-    String name = parts[0];
-    String version = parts[1];
-
-    Optional<SanitizedSecret> sanitizedSecret = aclDAO.getSanitizedSecretFor(client, name, version);
-    Optional<Secret> secret = secretController.getSecretByNameAndVersion(name, version);
+    Optional<SanitizedSecret> sanitizedSecret = aclDAO.getSanitizedSecretFor(client, secretName);
+    Optional<Secret> secret = secretController.getSecretByName(secretName);
 
     if (!sanitizedSecret.isPresent()) {
       boolean clientExists = clientDAO.getClient(client.getName()).isPresent();

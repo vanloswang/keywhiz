@@ -27,7 +27,6 @@ import keywhiz.api.model.Client;
 import keywhiz.api.model.Group;
 import keywhiz.api.model.SanitizedSecret;
 import keywhiz.api.model.Secret;
-import keywhiz.api.model.VersionGenerator;
 import keywhiz.cli.configs.AddActionConfig;
 import keywhiz.client.KeywhizClient;
 import keywhiz.client.KeywhizClient.NotFoundException;

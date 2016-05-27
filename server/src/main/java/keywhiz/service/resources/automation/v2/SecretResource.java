@@ -29,7 +29,6 @@ import keywhiz.api.model.Group;
 import keywhiz.api.model.SanitizedSecret;
 import keywhiz.api.model.Secret;
 import keywhiz.api.model.SecretSeries;
-import keywhiz.api.model.VersionGenerator;
 import keywhiz.service.daos.AclDAO;
 import keywhiz.service.daos.AclDAO.AclDAOFactory;
 import keywhiz.service.daos.GroupDAO;
@@ -97,10 +96,6 @@ public class SecretResource {
         .withMetadata(request.metadata())
         .withType(request.type());
 
-    if (request.versioned()) {
-      builder.withVersion(VersionGenerator.now().toHex());
-    }
-
     Secret secret;
     try {
       secret = builder.build();
@@ -115,10 +110,6 @@ public class SecretResource {
             (groupId) -> aclDAO.findAndAllowAccess(secretId, groupId)));
 
     UriBuilder uriBuilder = UriBuilder.fromResource(SecretResource.class).path(name);
-
-    if (request.versioned()) {
-      uriBuilder.path(secret.getVersion());
-    }
 
     return Response.created(uriBuilder.build()).build();
   }
@@ -176,10 +167,8 @@ public class SecretResource {
       @PathParam("name") String name) {
     SecretSeries secret = secretSeriesDAO.getSecretSeriesByName(name)
         .orElseThrow(NotFoundException::new);
-    List<String> versions = secretController.getVersionsForName(name);
     return SecretDetailResponseV2.builder()
         .series(secret)
-        .versions(versions)
         .build();
   }
 
@@ -198,7 +187,7 @@ public class SecretResource {
   public Iterable<String> secretGroupsListing(@Auth AutomationClient automationClient,
       @PathParam("name") String name) {
     // TODO: Use latest version instead of non-versioned
-    Secret secret = secretController.getSecretByNameAndVersion(name, "")
+    Secret secret = secretController.getSecretByName(name)
         .orElseThrow(NotFoundException::new);
     return aclDAO.getGroupsFor(secret).stream()
         .map(Group::getName)
@@ -223,7 +212,7 @@ public class SecretResource {
   public Iterable<String> modifySecretGroups(@Auth AutomationClient automationClient,
       @PathParam("name") String name, @Valid ModifyGroupsRequestV2 request) {
     // TODO: Use latest version instead of non-versioned
-    Secret secret = secretController.getSecretByNameAndVersion(name, "")
+    Secret secret = secretController.getSecretByName(name)
         .orElseThrow(NotFoundException::new);
 
     long secretId = secret.getId();
@@ -265,7 +254,7 @@ public class SecretResource {
   @Produces(APPLICATION_JSON)
   public SecretDetailResponseV2 secretVersionInfo(@Auth AutomationClient automationClient,
       @PathParam("name") String name, @PathParam("version") String version) {
-    Secret secret = secretController.getSecretByNameAndVersion(name, version)
+    Secret secret = secretController.getSecretByName(name)
         .orElseThrow(NotFoundException::new);
     return SecretDetailResponseV2.builder().secret(secret).build();
   }
@@ -295,7 +284,6 @@ public class SecretResource {
    *
    * @excludeParams automationClient
    * @param name Secret series name
-   * @param version Secret version, or empty
    *
    * @responseMessage 204 Secret version deleted
    * @responseMessage 404 Secret version not found
@@ -304,10 +292,10 @@ public class SecretResource {
   @DELETE
   @Path("{name}/{version:.*}")
   public Response deleteSecretVersion(@Auth AutomationClient automationClient,
-      @PathParam("name") String name, @PathParam("version") String version) {
-    secretController.getSecretByNameAndVersion(name, version)
+      @PathParam("name") String name) {
+    secretController.getSecretByName(name)
         .orElseThrow(NotFoundException::new);
-    secretDAO.deleteSecretByNameAndVersion(name, version);
+    secretDAO.deleteSecretByName(name);
     return Response.noContent().build();
   }
 

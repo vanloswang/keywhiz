@@ -70,15 +70,15 @@ public class TemplatedSecretGeneratorTest {
   @Test
   public void createsSecret() throws Exception {
     ApiDate now = ApiDate.now();
-    Secret secret = new Secret(5, "test-database.yaml", "versionStamp", "desc", "content", now, "creator", now, "creator", null, null, null);
+    Secret secret = new Secret(5, "test-database.yaml", "desc", "content", now, "creator", now, "creator", null, null, null);
     when(secretBuilder.build()).thenReturn(secret);
 
     when(secretController.getSecretsById(5L)).thenReturn(ImmutableList.of(secret));
-    when(secretController.getSecretByNameAndVersion(eq("test-database.yaml"), anyString()))
+    when(secretController.getSecretByName(eq("test-database.yaml")))
         .thenReturn(Optional.of(secret));
 
     TemplatedSecretsGeneratorRequest req = new TemplatedSecretsGeneratorRequest(
-        "{{#numeric}}10{{/numeric}}", "test-database.yaml", "desc", true, emptyMap);
+        "{{#numeric}}10{{/numeric}}", "test-database.yaml", "desc", emptyMap);
 
     List<Secret> secrets = generator.generate(user.getName(), req);
     assertThat(secrets).hasSize(1);
@@ -89,7 +89,7 @@ public class TemplatedSecretGeneratorTest {
   public void triesToCreateDuplicateSecret() throws Exception {
     DataAccessException exception = new DataAccessException("");
     TemplatedSecretsGeneratorRequest req = new TemplatedSecretsGeneratorRequest(
-        "{{#numeric}}10{{/numeric}}", "test-database.yaml", "desc", true, emptyMap);
+        "{{#numeric}}10{{/numeric}}", "test-database.yaml", "desc", emptyMap);
 
     doThrow(exception).when(secretBuilder).build();
 

@@ -36,8 +36,6 @@ public class TemplatedSecretsGeneratorRequest {
 
   private final String description;
 
-  private final boolean withVersion;
-
   @Nullable
   private final ImmutableMap<String, String> metadata;
 
@@ -45,17 +43,15 @@ public class TemplatedSecretsGeneratorRequest {
       @JsonProperty("template") String template,
       @JsonProperty("name") String name,
       @JsonProperty("description") @Nullable String description,
-      @JsonProperty("withVersion") boolean withVersion,
       @JsonProperty("metadata") @Nullable ImmutableMap<String, String> metadata) {
     this.template = template;
     this.name = name;
     this.description = nullToEmpty(description);
-    this.withVersion = withVersion;
     this.metadata = metadata;
   }
 
   @Override public int hashCode() {
-    return Objects.hashCode(name, template, description, withVersion, metadata);
+    return Objects.hashCode(name, template, description, metadata);
   }
 
   @Override public boolean equals(Object o) {
@@ -65,7 +61,6 @@ public class TemplatedSecretsGeneratorRequest {
       if (Objects.equal(this.name, that.name) &&
           Objects.equal(this.template, that.template) &&
           Objects.equal(this.description, that.description) &&
-          Objects.equal(this.withVersion, that.withVersion) &&
           Objects.equal(this.metadata, that.metadata)) {
         return true;
       }
@@ -83,10 +78,6 @@ public class TemplatedSecretsGeneratorRequest {
 
   public String getDescription() {
     return description;
-  }
-
-  public boolean isWithVersion() {
-    return withVersion;
   }
 
   public ImmutableMap<String, String> getMetadata() {

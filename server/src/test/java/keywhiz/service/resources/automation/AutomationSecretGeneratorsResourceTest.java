@@ -44,7 +44,7 @@ public class AutomationSecretGeneratorsResourceTest {
       new Client(1, "automation", "Automation client", NOW, "test", NOW, "test", true, true));
 
   private static final ImmutableMap<String, String> emptyMap = ImmutableMap.of();
-  private static final Secret secret = new Secret(22, "name", "version", "desc", "secret", NOW,
+  private static final Secret secret = new Secret(22, "name", "desc", "secret", NOW,
       "creator", NOW, "updater", emptyMap, null, null);
 
   private static final String generatorName = "sample-generator-name";

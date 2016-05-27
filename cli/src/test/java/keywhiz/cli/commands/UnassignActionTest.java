@@ -25,7 +25,6 @@ import keywhiz.api.model.Client;
 import keywhiz.api.model.Group;
 import keywhiz.api.model.SanitizedSecret;
 import keywhiz.api.model.Secret;
-import keywhiz.api.model.VersionGenerator;
 import keywhiz.cli.configs.UnassignActionConfig;
 import keywhiz.client.KeywhizClient;
 import org.junit.Before;

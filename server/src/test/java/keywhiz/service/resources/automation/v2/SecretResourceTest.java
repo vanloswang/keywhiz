@@ -83,7 +83,6 @@ public class SecretResourceTest {
         .description("desc")
         .metadata(ImmutableMap.of("owner", "root", "mode", "0440"))
         .type("password")
-        .versioned(true)
         .build();
     Response httpResponse = create(request);
     assertThat(httpResponse.code()).isEqualTo(201);
@@ -95,7 +94,6 @@ public class SecretResourceTest {
     CreateSecretRequestV2 request = CreateSecretRequestV2.builder()
         .name("secret4")
         .content(encoder.encodeToString("supa secre4".getBytes(UTF_8)))
-        .versioned(true)
         .build();
 
     // First secret
@@ -147,7 +145,6 @@ public class SecretResourceTest {
     assertThat(response.createdBy()).isEqualTo("client");
     assertThat(response.description()).isEqualTo("desc");
     assertThat(response.type()).isEqualTo("password");
-    assertThat(response.versions()).containsOnly("");
 
     // These values are left out for a series lookup as they pertain to a specific secret.
     assertThat(response.content()).isEmpty();
@@ -229,7 +226,6 @@ public class SecretResourceTest {
         .description("desc")
         .metadata(ImmutableMap.of("owner", "root", "mode", "0440"))
         .type("password")
-        .versioned(true)
         .build());
     URI location = URI.create(httpResponse.header(LOCATION));
     String version = Iterables.getLast(Splitter.on('/').split(location.getPath()));
@@ -239,7 +235,6 @@ public class SecretResourceTest {
     assertThat(response.createdBy()).isEqualTo("client");
     assertThat(response.description()).isEqualTo("desc");
     assertThat(response.type()).isEqualTo("password");
-    assertThat(response.versions()).hasSize(1);
 
     assertThat(decoder.decode(response.content())).isEqualTo(secret);
     assertThat(response.size().longValue()).isEqualTo(secret.length);
@@ -262,7 +257,6 @@ public class SecretResourceTest {
     assertThat(response.createdBy()).isEqualTo("client");
     assertThat(response.description()).isEqualTo("desc");
     assertThat(response.type()).isEqualTo("password");
-    assertThat(response.versions()).hasSize(1);
 
     assertThat(decoder.decode(response.content())).isEqualTo(secret);
     assertThat(response.size().longValue()).isEqualTo(secret.length);
@@ -302,7 +296,6 @@ public class SecretResourceTest {
     Response httpResponse = create(CreateSecretRequestV2.builder()
         .name("secret14")
         .content(encoder.encodeToString("supa secret14".getBytes(UTF_8)))
-        .versioned(true)
         .build());
     URI location = URI.create(httpResponse.header(LOCATION));
     String version = Iterables.getLast(Splitter.on('/').split(location.getPath()));

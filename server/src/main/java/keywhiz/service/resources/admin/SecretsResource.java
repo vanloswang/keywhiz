@@ -46,7 +46,6 @@ import keywhiz.api.model.Client;
 import keywhiz.api.model.Group;
 import keywhiz.api.model.SanitizedSecret;
 import keywhiz.api.model.Secret;
-import keywhiz.api.model.VersionGenerator;
 import keywhiz.auth.User;
 import keywhiz.service.daos.AclDAO;
 import keywhiz.service.daos.AclDAO.AclDAOFactory;
@@ -97,7 +96,6 @@ public class SecretsResource {
    * @optionalParams name
    * @param name the name of the Secret to retrieve, if provided
    * @optionalParams version
-   * @param version the version of the Secret to retrieve, if provided
    * @param nameOnly if set, the result only contains the id and name for the secrets.
    *
    * @description Returns a single Secret or a set of all Secrets for this user.
@@ -108,7 +106,6 @@ public class SecretsResource {
   @Timed @ExceptionMetered
   @GET
   public Response findSecrets(@Auth User user, @DefaultValue("") @QueryParam("name") String name,
-      @DefaultValue("") @QueryParam("version") String version,
       @DefaultValue("") @QueryParam("nameOnly") String nameOnly) {
     if (name.isEmpty()) {
       if (nameOnly.isEmpty()) {
@@ -117,7 +114,7 @@ public class SecretsResource {
         return Response.ok().entity(listSecretsNameOnly(user)).build();
       }
     }
-    return Response.ok().entity(retrieveSecret(user, name, version)).build();
+    return Response.ok().entity(retrieveSecret(user, name)).build();
   }
 
   protected List<SanitizedSecret> listSecrets(@Auth User user) {
@@ -130,38 +127,9 @@ public class SecretsResource {
     return secretController.getSecretsNameOnly();
   }
 
-  protected SanitizedSecret retrieveSecret(@Auth User user, String name, String version) {
-    logger.info("User '{}' retrieving secret name={} version={}.", user, name, version);
-    return sanitizedSecretFromNameAndVersion(name, version);
-  }
-
-  /**
-   * Retrieve all versions for a Secret name
-   *
-   * @excludeParams user
-   * @param name the name of the Secret to find all versions for
-   *
-   * @description Returns a list of all versions for the given secret.
-   * Used by Keywhiz CLI and the web ui.
-   * @responseMessage 200 Found and retrieved versions(s)
-   * @responseMessage 400 Name not given
-   */
-  @Path("/versions")
-  @Timed @ExceptionMetered
-  @GET
-  public List<String> getVersionsForSecretName(@Auth User user,
-      @DefaultValue("") @QueryParam("name") String name) {
-    if (name.isEmpty()) {
-      // Must supply a secret name to find versions for
-      throw new BadRequestException("Must supply secret name to find versions.");
-    }
-    return retrieveSecretVersions(user, name);
-  }
-
-  /** Finds all versions for the specified secret name **/
-  protected List<String> retrieveSecretVersions(User user, String name) {
-    logger.info("User '{}' finding versions for secret '{}'.", user, name);
-    return secretController.getVersionsForName(name);
+  protected SanitizedSecret retrieveSecret(@Auth User user, String name) {
+    logger.info("User '{}' retrieving secret name={}.", user, name);
+    return sanitizedSecretFromName(name);
   }
 
   /**
@@ -180,8 +148,7 @@ public class SecretsResource {
   @Consumes(APPLICATION_JSON)
   public Response createSecret(@Auth User user, @Valid CreateSecretRequest request) {
 
-    logger.info("User '{}' creating secret '{}' {} versioning.",
-        user, request.name, request.withVersion ? "with" : "without");
+    logger.info("User '{}' creating secret {}.", user, request.name);
 
     Secret secret;
     try {
@@ -194,10 +161,6 @@ public class SecretsResource {
 
       if (request.metadata != null) {
         builder.withMetadata(request.metadata);
-      }
-
-      if (request.withVersion) {
-        builder.withVersion(VersionGenerator.now().toHex());
       }
 
       secret = builder.build();
@@ -276,8 +239,8 @@ public class SecretsResource {
     return SecretDetailResponse.fromSecret(secret, groups, clients);
   }
 
-  private SanitizedSecret sanitizedSecretFromNameAndVersion(String name, String version) {
-    Optional<Secret> optionalSecret = secretController.getSecretByNameAndVersion(name, version);
+  private SanitizedSecret sanitizedSecretFromName(String name) {
+    Optional<Secret> optionalSecret = secretController.getSecretByName(name);
     if (!optionalSecret.isPresent()) {
       throw new NotFoundException("Secret not found.");
     }

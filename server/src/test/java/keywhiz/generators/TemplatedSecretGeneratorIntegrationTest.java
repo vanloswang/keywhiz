@@ -54,7 +54,6 @@ public class TemplatedSecretGeneratorIntegrationTest {
             "{{#alphanumeric}}20{{/alphanumeric}}",
             "ou-database.yaml",
             "description",
-            false,
             ImmutableMap.of()));
 
     assertThat(keywhizClient.allSecrets().stream().map(SanitizedSecret::name).toArray())
@@ -66,9 +65,9 @@ public class TemplatedSecretGeneratorIntegrationTest {
 
     List<TemplatedSecretsGeneratorRequest> templateBatch = ImmutableList.of(
         new TemplatedSecretsGeneratorRequest("{{#numeric}}20{{/numeric}}",
-            "batchName", "desc", false, ImmutableMap.of()),
+            "batchName", "desc", ImmutableMap.of()),
         new TemplatedSecretsGeneratorRequest("{{#numeric}}20{{/numeric}}",
-            "batchName", "desc", false, ImmutableMap.of())
+            "batchName", "desc", ImmutableMap.of())
     );
 
     try {
@@ -85,9 +84,9 @@ public class TemplatedSecretGeneratorIntegrationTest {
 
     List<TemplatedSecretsGeneratorRequest> templateBatch = ImmutableList.of(
       new TemplatedSecretsGeneratorRequest("{{#numeric}}20{{/numeric}}",
-          "batchName1", "desc", false, ImmutableMap.of()),
+          "batchName1", "desc", ImmutableMap.of()),
       new TemplatedSecretsGeneratorRequest("{{#numeric}}20{{/numeric}}",
-          "batchName2", "desc", false, ImmutableMap.of())
+          "batchName2", "desc", ImmutableMap.of())
     );
 
     keywhizClient.batchGenerateSecrets("templated", templateBatch);
@@ -104,7 +103,7 @@ public class TemplatedSecretGeneratorIntegrationTest {
 
     for (int i = 0; i < SecretGenerator.MAX_TEMPLATE_BATCH_SIZE + 1; i++) {
       templateBatch.add(new TemplatedSecretsGeneratorRequest("{{#numeric}}20{{/numeric}}",
-          "batchName" + i, "desc", false, ImmutableMap.of()));
+          "batchName" + i, "desc", ImmutableMap.of()));
     }
 
     keywhizClient.batchGenerateSecrets("templated", templateBatch);
@@ -127,7 +126,6 @@ public class TemplatedSecretGeneratorIntegrationTest {
             "{{#alphanumeric}}20{{/alphanumeric}}",
             "newTemplatedSecret",
             "desc1",
-            true,
             ImmutableMap.of()));
 
     List<SanitizedSecret> sanitizedSecrets1 = keywhizClient.allSecrets();
@@ -147,7 +145,6 @@ public class TemplatedSecretGeneratorIntegrationTest {
             "{{#alphanumeric}}20{{/alphanumeric}}",
             "newTemplatedSecret",
             "desc2",
-            true,
             ImmutableMap.of()));
 
     List<SanitizedSecret> sanitizedSecrets2 = keywhizClient.allSecrets();
@@ -172,7 +169,6 @@ public class TemplatedSecretGeneratorIntegrationTest {
             "{{#alphanumeric}}20{{/alphanumeric}}",
             "unversionedTemplated",
             "desc1",
-            false,
             ImmutableMap.of()));
 
     keywhizClient.generateSecrets("templated",
@@ -180,7 +176,6 @@ public class TemplatedSecretGeneratorIntegrationTest {
             "{{#alphanumeric}}20{{/alphanumeric}}",
             "unversionedTemplated",
             "desc2",
-            false,
             ImmutableMap.of()));
   }
 

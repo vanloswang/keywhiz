@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import keywhiz.api.TemplatedSecretsGeneratorRequest;
 import keywhiz.api.model.Secret;
-import keywhiz.api.model.VersionGenerator;
 import keywhiz.service.daos.SecretController;
 import keywhiz.utility.SecretTemplateCompiler;
 import org.jooq.exception.DataAccessException;
@@ -64,8 +63,8 @@ public class TemplatedSecretGenerator extends SecretGenerator<TemplatedSecretsGe
       throw new BadRequestException("Cannot compile secret template.");
     }
 
-    logger.info("User '{}' creating templated secret '{}' {} versioning.",
-        creatorName, request.getName(), request.isWithVersion() ? "with" : "without");
+    logger.info("User '{}' creating templated secret.",
+        creatorName, request.getName());
 
     SecretController.SecretBuilder builder =
         secretController.builder(secretName, secretContent, creatorName, 0)
@@ -73,10 +72,6 @@ public class TemplatedSecretGenerator extends SecretGenerator<TemplatedSecretsGe
         .withMetadata(request.getMetadata())
         .withType("templated")
         .withGenerationOptions(ImmutableMap.of("template", request.getTemplate()));
-
-    if (request.isWithVersion()) {
-      builder.withVersion(VersionGenerator.now().toHex());
-    }
 
     Secret secret;
     try {
